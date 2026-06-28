@@ -1,0 +1,765 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>IntelligenzIT: Digital Worker Factory Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0c0f;--surface:#131317;--surface-2:#1a1a1f;--surface-3:#222228;
+  --line:#2a2a30;--line-soft:#1e1e24;
+  --ink:#e8e8ec;--muted:#8a8a92;--faint:#5b5b63;
+  --red:#ff2d2d;--green:#3fb950;--amber:#e3a008;--blue:#4c8dff;--grey:#6b6b73;
+  --accent:#4c8dff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-family:'Geist',system-ui,sans-serif;-webkit-font-smoothing:antialiased;padding:0;line-height:1.5}
+.mono{font-family:'JetBrains Mono',mono-space}
+
+/* ── nav ── */
+.nav{position:sticky;top:0;z:50;background:rgba(12,12,15,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:12px 24px;display:flex;align-items:center;justify-content:space-between}
+.nav .brand{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;letter-spacing:.04em}
+.nav .brand b{color:var(--accent)}
+.nav .links{display:flex;gap:20px;font-size:12px;color:var(--muted)}
+.nav .links a{color:var(--muted);text-decoration:none;transition:color .15s}
+.nav .links a:hover{color:var(--ink)}
+.nav .badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 10px;border:1px solid var(--line);border-radius:4px;color:var(--muted)}
+
+/* ── layout ── */
+.wrap{max-width:1320px;margin:0 auto;padding:0 24px}
+
+/* ── hero ── */
+.hero{padding:80px 0 60px;border-bottom:1px solid var(--line)}
+.hero .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:16px}
+.hero h1{font-size:clamp(36px,5vw,62px);font-weight:600;line-height:1.02;margin:0 0 16px;letter-spacing:-.02em;max-width:900px}
+.hero h1 .it{font-style:italic;color:var(--muted);font-weight:400}
+.hero .sub{font-size:17px;color:var(--muted);max-width:680px;line-height:1.55;margin:0 0 36px}
+.hero .meta{display:flex;gap:24px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint)}
+.hero .meta span{display:flex;align-items:center;gap:6px}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.dot.g{background:var(--green)}.dot.a{background:var(--amber)}.dot.r{background:var(--red)}.dot.gr{background:var(--grey)}
+
+/* ── knowledge graph canvas ── */
+.graph-section{padding:60px 0 40px}
+.graph-section h2{font-size:22px;font-weight:600;margin:0 0 8px}
+.graph-section .section-sub{font-size:14px;color:var(--muted);margin:0 0 32px}
+
+#kg-canvas{width:100%;border:1px solid var(--line);border-radius:8px;background:var(--surface);display:block}
+
+/* ── legend ── */
+.legend{display:flex;gap:20px;flex-wrap:wrap;margin:16px 0 0;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.legend .lg{display:flex;align-items:center;gap:7px}
+.legend .sw{width:11px;height:11px;border-radius:2px}
+.legend .sw.b{background:var(--green)}.legend .sw.i{background:var(--amber)}.legend .sw.n{background:var(--grey)}.legend .sw.f{background:var(--red)}
+
+/* ── architecture layers ── */
+.arch-section{padding:60px 0 40px;border-top:1px solid var(--line)}
+.arch-section h2{font-size:22px;font-weight:600;margin:0 0 8px}
+.arch-section .section-sub{font-size:14px;color:var(--muted);margin:0 0 32px}
+
+.arch-layers{display:flex;flex-direction:column;gap:0}
+.arch-layer{border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-top:-1px}
+.arch-layer .layer-head{display:grid;grid-template-columns:200px 1fr auto;align-items:center;gap:16px;padding:16px 20px;background:var(--surface);cursor:pointer;transition:background .15s}
+.arch-layer .layer-head:hover{background:var(--surface-2)}
+.arch-layer .layer-name{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;display:flex;align-items:center;gap:10px}
+.arch-layer .layer-name .punct{color:var(--accent)}
+.arch-layer .layer-desc{font-size:13px;color:var(--muted)}
+.arch-layer .layer-status{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:3px;white-space:nowrap}
+.arch-layer .layer-status.b{color:var(--green);background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.2)}
+.arch-layer .layer-status.i{color:var(--amber);background:rgba(227,160,8,.08);border:1px solid rgba(227,160,8,.2)}
+.arch-layer .layer-status.n{color:var(--grey);background:rgba(107,107,115,.08);border:1px solid rgba(107,107,115,.2)}
+.arch-layer .layer-status.f{color:var(--red);background:rgba(255,45,45,.08);border:1px solid rgba(255,45,45,.2)}
+
+.arch-layer .layer-body{display:none;padding:20px;background:var(--surface-2);border-top:1px solid var(--line)}
+.arch-layer.open .layer-body{display:block}
+
+.components{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.comp{border:1px solid var(--line);border-radius:6px;padding:14px 16px;background:var(--surface)}
+.comp .comp-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+.comp .comp-name{font-size:13.5px;font-weight:600}
+.comp .comp-badge{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:3px 7px;border-radius:2px;white-space:nowrap}
+.comp .comp-badge.b{color:var(--green);background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.2)}
+.comp .comp-badge.i{color:var(--amber);background:rgba(227,160,8,.08);border:1px solid rgba(227,160,8,.2)}
+.comp .comp-badge.n{color:var(--grey);background:rgba(107,107,115,.08);border:1px solid rgba(107,107,115,.2)}
+.comp .comp-badge.f{color:var(--red);background:rgba(255,45,45,.08);border:1px solid rgba(255,45,45,.2)}
+.comp .comp-desc{font-size:12px;color:var(--muted);line-height:1.45}
+.comp .comp-tech{margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint)}
+
+/* ── guided tour ── */
+.tour-section{padding:60px 0 40px;border-top:1px solid var(--line)}
+.tour-section h2{font-size:22px;font-weight:600;margin:0 0 8px}
+.tour-section .section-sub{font-size:14px;color:var(--muted);margin:0 0 32px}
+
+.tour{display:flex;flex-direction:column;gap:0}
+.tour-step{display:grid;grid-template-columns:40px 1fr;gap:16px;padding:20px 0;border-bottom:1px solid var(--line-soft)}
+.tour-step:last-child{border-bottom:none}
+.tour-step .num{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--accent);text-align:center;padding-top:2px}
+.tour-step .content h3{font-size:15px;font-weight:600;margin:0 0 6px}
+.tour-step .content p{font-size:13px;color:var(--muted);margin:0;line-height:1.5}
+.tour-step .content .tech-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.tour-step .content .tech-tags span{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 8px;border:1px solid var(--line);border-radius:3px;color:var(--faint)}
+
+/* ── workers catalogue ── */
+.workers-section{padding:60px 0 40px;border-top:1px solid var(--line)}
+.workers-section h2{font-size:22px;font-weight:600;margin:0 0 8px}
+.workers-section .section-sub{font-size:14px;color:var(--muted);margin:0 0 32px}
+
+.workers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.worker{border:1px solid var(--line);border-radius:8px;padding:20px;background:var(--surface);transition:border-color .2s}
+.worker:hover{border-color:var(--accent)}
+.worker .worker-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.worker .worker-name{font-size:16px;font-weight:600}
+.worker .worker-role{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:3px}
+.worker .worker-desc{font-size:13px;color:var(--muted);line-height:1.5;margin:0 0 14px}
+.worker .worker-kras{display:flex;flex-wrap:wrap;gap:6px}
+.worker .worker-kras span{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 8px;border:1px solid var(--line);border-radius:3px;color:var(--faint)}
+
+/* ── standing banner ── */
+.standing{margin:60px 0;padding:24px 28px;border:1px solid rgba(76,141,255,.3);border-radius:8px;background:linear-gradient(180deg,rgba(76,141,255,.04),transparent);display:flex;gap:24px;align-items:center}
+.standing .big{font-size:42px;font-weight:700;color:var(--accent);line-height:1;white-space:nowrap;font-family:'JetBrains Mono',monospace}
+.standing .t{font-size:14px;line-height:1.55}
+.standing .t b{font-weight:600}
+.standing .t span{color:var(--muted)}
+
+/* ── footer ── */
+footer{padding:40px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint);flex-wrap:wrap;gap:12px}
+
+/* ── responsive ── */
+@media(max-width:768px){
+  .hero{padding:48px 0 36px}
+  .nav .links{display:none}
+  .arch-layer .layer-head{grid-template-columns:1fr;gap:8px}
+  .standing{flex-direction:column;text-align:center}
+  #kg-canvas{height:400px!important}
+}
+</style>
+</head>
+<body>
+
+<!-- nav -->
+<nav class="nav">
+  <div class="brand">INTELLIGENZ<b>IT</b> <span style="color:var(--faint);font-weight:400;margin-left:8px">/ factory map</span></div>
+  <div class="links">
+    <a href="#graph">Graph</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#tour">Tour</a>
+    <a href="#workers">Workers</a>
+    <a href="#standing">Standing</a>
+  </div>
+  <div class="badge">Jun 28, 2026</div>
+</nav>
+
+<!-- hero -->
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Knowledge Graph / Interactive Map</div>
+    <h1>Digital Worker Factory <span class="it">: how it's built, how it runs, where we are</span></h1>
+    <p class="sub">An interactive map of the IntelligenzIT Digital Worker Factory. Click any node to drill in. Follow the guided tour to walk the flow end to end. See exactly what's built, what's in progress, and what's next.</p>
+    <div class="meta">
+      <span><span class="dot g"></span> Built & shipping</span>
+      <span><span class="dot a"></span> In build</span>
+      <span><span class="dot r"></span> Current focus</span>
+      <span><span class="dot gr"></span> Planned</span>
+    </div>
+  </div>
+</section>
+
+<!-- knowledge graph -->
+<section class="graph-section" id="graph">
+  <div class="wrap">
+    <h2>Factory knowledge graph</h2>
+    <p class="section-sub">Each node is a subsystem. Click to see what it does, what it depends on, and its current status. This is the "Understand Anything" view of the Digital Worker Factory.</p>
+    <canvas id="kg-canvas" height="520"></canvas>
+    <div class="legend">
+      <div class="lg"><span class="sw b"></span>Built</div>
+      <div class="lg"><span class="sw i"></span>In build</div>
+      <div class="lg"><span class="sw n"></span>Planned</div>
+      <div class="lg"><span class="sw f"></span>Current focus</div>
+    </div>
+  </div>
+</section>
+
+<!-- architecture layers -->
+<section class="arch-section" id="architecture">
+  <div class="wrap">
+    <h2>Architecture layers</h2>
+    <p class="section-sub">The factory pattern: build core once, specialise outward. Each layer wraps the one inside it.</p>
+
+    <div class="arch-layers">
+      <!-- Layer 0 -->
+      <div class="arch-layer" onclick="toggleLayer(this)">
+        <div class="layer-head">
+          <div class="layer-name"><span class="punct">core/</span> : shared engine</div>
+          <div class="layer-desc">LangGraph orchestration, tool framework, memory, 360° observation, DPI scoring</div>
+          <div class="layer-status b">Built</div>
+        </div>
+        <div class="layer-body">
+          <div class="components">
+            <div class="comp">
+              <div class="comp-head"><div class="comp-name">LangGraph orchestration</div><div class="comp-badge b">Built</div></div>
+              <div class="comp-desc">State machine runtime. Agent nodes, conditional edges, human-in-the-loop checkpoints, streaming.</div>
+              <div class="comp-tech">langgraph · Python</div>
+            </div>
+            <div class="comp">
+              <div class="comp-head"><div class="comp-name">Tool framework</div><div class="comp-badge b">Built</div></div>
+              <div class="comp-desc">Typed tool registration, schema validation, retry logic, MCP connector support.</div>
+              <div class="comp-tech">boto3 · MCP · custom</div>
+            </div>
+            <div class="comp">
+              <div class="comp-head"><div class="comp-name">Memory layer</div><div class="comp-badge b">Built</div></div>
+              <div class="comp-desc">Short-term (conversation), long-term (Postgres), episodic recall across sessions.</div>
+              <div class="comp-tech">Postgres · RDS</div>
+            </div>
+            <div class="comp">
+              <div class="comp-head"><div class="comp-name">360° observation</div><div class="comp-badge b">Built</div></div>
+              <div class="comp-desc">Structured logging, trace spans, decision audit trail, tool call history.</div>
+              <div class="comp-tech">custom · structured output</div>
+            </div>
+            <div class="comp">
+              <div class="comp-head"><div class="comp-name">DPI scoring engine</div><div class="comp-badge f">In build</div></div>
+              <div class="comp-desc">0-100 index across 7 dimensions. Real signals only, no synthetic data.</div>
+              <div class="comp-tech">Python · Postgres</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer 1 -->
+      <div class="arch-layer" onclick="toggleLayer(this)">
+        <div class="layer-head">
+          <div class="layer-name"><span class="punct">verticals/</span>cloud_eng/</div>
+          <div class="layer-desc">Domain KRAs, tool sets, policies for cloud engineering</div>
+          <div class="layer-status b">Built · cloud-eng</div>
+        </div>
+        <div class="layer-body">
+          <div class="components">
+            <div class="comp">
+              <div class="comp-head"><div class="comp-name">5 KRA definitions</div><div class="comp-badge b">Built</div></div>
+              <div class="comp-desc">Cost, security, compliance, performance, reliability. Each with seeded misconfig tests.</div>
+              <div class="comp-tech">YAML · Python</div>
+            </div>
+            <div class="comp">
+              <div class="comp-head"><div class="comp-name">AWS tool set</div><div class="comp-badge b">Built</div></div>
+              <div class="comp-desc">EC2, S3, IAM, CloudTrail, Cost Explorer, GuardDuty, Config. Scoped IAM per worker.</div>
+              <div class="comp-tech">boto3 · AWS SDK</div>
+            </div>
+            <div class="comp">
+              <div class="comp-head"><div class="comp-name">Policy engine</div><div class="comp-badge b">Built</div></div>
+              <div class="comp-desc">Guardrails the worker cannot cross. Approval gates for destructive actions.</div>
+              <div class="comp-tech">OPA · custom rules</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer 2 -->
+      <div class="arch-layer" onclick="toggleLayer(this)">
+        <div class="layer-head">
+          <div class="layer-name"><span class="punct">clients/</span>_template/</div>
+          <div class="layer-desc">Client configuration, connectors, data bindings</div>
+          <div class="layer-status b">Built · Regeneron</div>
+        </div>
+        <div class="layer-body">
+          <div class="components">
+            <div class="comp">
+              <div class="comp-head"><div class="comp-name">Client config</div><div class="comp-badge b">Built</div></div>
+              <div class="comp-desc">Engagement scope, KRA weights, reporting cadence, escalation paths.</div>
+              <div class="comp-tech">YAML · JSON</div>
+            </div>
+            <div class="comp">
+              <div class="comp-head"><div class="comp-name">MCP connectors</div><div class="comp-badge b">Built</div></div>
+              <div class="comp-desc">Standardised interface to client AWS, ticketing, Slack, PagerDuty.</div>
+              <div class="comp-tech">MCP protocol</div>
+            </div>
+            <div class="comp">
+              <div class="comp-head"><div class="comp-name">Client data isolation</div><div class="comp-badge b">Built</div></div>
+              <div class="comp-desc">Per-tenant Postgres schemas, encrypted at rest, audit-logged access.</div>
+              <div class="comp-tech">Postgres · RDS</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer 3 -->
+      <div class="arch-layer" onclick="toggleLayer(this)">
+        <div class="layer-head">
+          <div class="layer-name"><span class="punct">agents/</span> chandra</div>
+          <div class="layer-desc">Running worker instance: Digital Cloud Engineer</div>
+          <div class="comp-badge b" style="padding:4px 10px">PoC delivered</div>
+        </div>
+        <div class="layer-body">
+          <div class="components">
+            <div class="comp">
+              <div class="comp-head"><div class="comp-name">Claude Sonnet on Bedrock</div><div class="comp-badge b">Built</div></div>
+              <div class="comp-desc">Primary reasoning engine. Invoked per KRA cycle with full context window.</div>
+              <div class="comp-tech">AWS Bedrock · Claude Sonnet</div>
+            </div>
+            <div class="comp">
+              <div class="comp-head"><div class="comp-name">Streamlit dashboard</div><div class="comp-badge b">Built</div></div>
+              <div class="comp-desc">Real-time worker status, KRA scores, action log, human approval queue.</div>
+              <div class="comp-tech">Streamlit · Python</div>
+            </div>
+            <div class="comp">
+              <div class="comp-head"><div class="comp-name">Terraform output</div><div class="comp-badge b">Built</div></div>
+              <div class="comp-desc">Worker produces Terraform plans for infrastructure changes. Human approves before apply.</div>
+              <div class="comp-tech">Terraform · HCL</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- guided tour -->
+<section class="tour-section" id="tour">
+  <div class="wrap">
+    <h2>Guided tour: how a Digital Worker is produced</h2>
+    <p class="section-sub">Walk the factory floor. Six stages from client need to scored, deployed FTE.</p>
+
+    <div class="tour">
+      <div class="tour-step">
+        <div class="num">01</div>
+        <div class="content">
+          <h3>Shared runtime</h3>
+          <p>The factory floor. LangGraph orchestration runs the agent loop. The tool framework registers every capability the worker can use. Memory persists across sessions. Observation captures every decision for audit.</p>
+          <div class="tech-tags">
+            <span>LangGraph</span><span>Postgres</span><span>boto3</span><span>MCP</span>
+          </div>
+        </div>
+      </div>
+      <div class="tour-step">
+        <div class="num">02</div>
+        <div class="content">
+          <h3>Domain pack</h3>
+          <p>The vertical specialisation layer. For cloud engineering: 5 KRAs (cost, security, compliance, performance, reliability), AWS tool set, policy guardrails. A new vertical reuses everything inside. Only this layer is new.</p>
+          <div class="tech-tags">
+            <span>KRA definitions</span><span>AWS tools</span><span>policy engine</span>
+          </div>
+        </div>
+      </div>
+      <div class="tour-step">
+        <div class="num">03</div>
+        <div class="content">
+          <h3>Instantiate</h3>
+          <p>From the client template: config, MCP connectors to client systems, data bindings. Each engagement is a new instance. Regeneron is live. smart Europe is scoped.</p>
+          <div class="tech-tags">
+            <span>YAML config</span><span>MCP connectors</span><span>data isolation</span>
+          </div>
+        </div>
+      </div>
+      <div class="tour-step">
+        <div class="num">04</div>
+        <div class="content">
+          <h3>Worker runs</h3>
+          <p>Chandra executes. Claude Sonnet on Bedrock reasons across all 5 KRAs. Findings stream to the Streamlit dashboard. Terraform plans wait for human approval. PoC demoed live in Bangalore.</p>
+          <div class="tech-tags">
+            <span>Claude Sonnet</span><span>Bedrock</span><span>Streamlit</span><span>Terraform</span>
+          </div>
+        </div>
+      </div>
+      <div class="tour-step">
+        <div class="num" style="color:var(--red)">05</div>
+        <div class="content">
+          <h3>Performance Index <span style="font-size:11px;color:var(--red);font-family:'JetBrains Mono',monospace;padding:2px 8px;border:1px solid rgba(255,45,45,.3);border-radius:3px;margin-left:8px">IN BUILD</span></h3>
+          <p>The scoring layer. DPI reads 0-100 across 7 dimensions: Productivity, Quality, Execution, Governance, Risk, Validation, Cost. Formula: PI = (P x Q x 1.5E) + (G x 1.5R) + (C x V). Must read off real agent signals, not synthetic data. This is the frontier.</p>
+          <div class="tech-tags">
+            <span>7 dimensions</span><span>real signals</span><span>customer-configurable</span>
+          </div>
+        </div>
+      </div>
+      <div class="tour-step">
+        <div class="num">06</div>
+        <div class="content">
+          <h3>Deployed FTE + scorecard</h3>
+          <p>The output. A productised, scored, sellable Digital FTE. Three commercial models: implement (build it), consult (advise), rent (ongoing worker-as-a-service). Closes the loop from client need to measurable outcome.</p>
+          <div class="tech-tags">
+            <span>implement</span><span>consult</span><span>rent</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- workers -->
+<section class="workers-section" id="workers">
+  <div class="wrap">
+    <h2>Digital Workers: the catalogue</h2>
+    <p class="section-sub">Each worker is a specialised instance of the factory pattern. One built, three planned.</p>
+
+    <div class="workers-grid">
+      <div class="worker">
+        <div class="worker-head">
+          <div>
+            <div class="worker-name">Chandra</div>
+            <div class="worker-role">Digital Cloud Engineer · IT</div>
+          </div>
+          <div class="comp-badge b">PoC delivered</div>
+        </div>
+        <div class="worker-desc">Autonomous cloud engineering across cost, security, compliance, performance, reliability. Live with Regeneron.</div>
+        <div class="worker-kras">
+          <span>cost</span><span>security</span><span>compliance</span><span>performance</span><span>reliability</span>
+        </div>
+      </div>
+
+      <div class="worker">
+        <div class="worker-head">
+          <div>
+            <div class="worker-name">Vajra</div>
+            <div class="worker-role">SOC Analyst · Security</div>
+          </div>
+          <div class="comp-badge n">Planned</div>
+        </div>
+        <div class="worker-desc">Security operations centre analyst. Threat detection, incident response, compliance reporting.</div>
+        <div class="worker-kras">
+          <span>detection</span><span>response</span><span>reporting</span>
+        </div>
+      </div>
+
+      <div class="worker">
+        <div class="worker-head">
+          <div>
+            <div class="worker-name">Mira</div>
+            <div class="worker-role">HR Ops · HR</div>
+          </div>
+          <div class="comp-badge n">Planned</div>
+        </div>
+        <div class="worker-desc">Human resources operations. Onboarding, policy queries, compliance tracking, employee lifecycle.</div>
+        <div class="worker-kras">
+          <span>onboarding</span><span>policy</span><span>lifecycle</span>
+        </div>
+      </div>
+
+      <div class="worker">
+        <div class="worker-head">
+          <div>
+            <div class="worker-name">Avani</div>
+            <div class="worker-role">Clinical Trials Ops · Life Sci</div>
+          </div>
+          <div class="comp-badge n">Planned</div>
+        </div>
+        <div class="worker-desc">Clinical trial operations monitoring. Site tracking, compliance, data quality, safety signals.</div>
+        <div class="worker-kras">
+          <span>sites</span><span>compliance</span><span>data quality</span><span>safety</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- standing -->
+<section class="standing" id="standing">
+  <div class="wrap" style="width:100%">
+    <div class="big">04 / 06</div>
+    <div class="t">
+      <b>The factory line is built through the agent stage.</b> Chandra runs end-to-end on real AWS with Regeneron. <span>The frontier is the scoring layer (DPI): making the Performance Index read off real agent signals, not synthetic data. Close that, and the output stage (a productised, scored, sellable Digital FTE) is next.</span>
+    </div>
+  </div>
+</section>
+
+<!-- footer -->
+<footer>
+  <div class="wrap" style="width:100%;display:flex;justify-content:space-between">
+    <span>INTELLIGENZIT · ENTERPRISE DIGITAL WORKER FACTORY · INTERNAL</span>
+    <span>CORE → VERTICAL → CLIENT → AGENT → DPI → OUTPUT</span>
+  </div>
+</footer>
+
+<script>
+// ── Knowledge Graph ──
+(function(){
+  const canvas = document.getElementById('kg-canvas');
+  const ctx = canvas.getContext('2d');
+  
+  function resize(){
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width * (window.devicePixelRatio || 1);
+    canvas.height = 520 * (window.devicePixelRatio || 1);
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = '520px';
+    ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+    draw();
+  }
+  
+  // Nodes: [id, label, x, y, w, h, status, layer]
+  const nodes = [
+    // Core layer
+    {id:'orchestration',label:'LangGraph\norchestration',x:80,y:60,w:160,h:50,s:'b',core:true},
+    {id:'tools',label:'Tool\nframework',x:280,y:60,w:140,h:50,s:'b',core:true},
+    {id:'memory',label:'Memory\nlayer',x:460,y:60,w:120,h:50,s:'b',core:true},
+    {id:'observation',label:'360°\nobservation',x:620,y:60,w:130,h:50,s:'b',core:true},
+    {id:'dpi_engine',label:'DPI scoring\nengine',x:800,y:60,w:140,h:50,s:'f',core:true},
+    
+    // Vertical layer
+    {id:'kras',label:'5 KRA\ndefinitions',x:180,y:180,w:140,h:50,s:'b'},
+    {id:'aws_tools',label:'AWS\ntool set',x:380,y:180,w:130,h:50,s:'b'},
+    {id:'policy',label:'Policy\nengine',x:570,y:180,w:120,h:50,s:'b'},
+    
+    // Client layer
+    {id:'config',label:'Client\nconfig',x:250,y:300,w:120,h:50,s:'b'},
+    {id:'connectors',label:'MCP\nconnectors',x:430,y:300,w:120,h:50,s:'b'},
+    {id:'isolation',label:'Data\nisolation',x:610,y:300,w:110,h:50,s:'b'},
+    
+    // Agent layer
+    {id:'chandra',label:'Chandra\n(Claude Sonnet)',x:300,y:420,w:170,h:50,s:'b'},
+    {id:'streamlit',label:'Streamlit\ndashboard',x:530,y:420,w:140,h:50,s:'b'},
+    
+    // DPI output
+    {id:'dpi_output',label:'DPI Score\n0-100',x:750,y:420,w:120,h:50,s:'f'},
+    
+    // Planned workers
+    {id:'vajra',label:'Vajra\n(SOC)',x:80,y:420,w:100,h:44,s:'n'},
+    {id:'mira',label:'Mira\n(HR)',x:100,y:360,w:90,h:44,s:'n'},
+    {id:'avani',label:'Avani\n(Clinical)',x:100,y:300,w:100,h:44,s:'n'},
+  ];
+  
+  const edges = [
+    ['orchestration','tools'],['tools','memory'],['tools','observation'],
+    ['orchestration','dpi_engine'],
+    ['tools','aws_tools'],['orchestration','kras'],['policy','aws_tools'],
+    ['kras','config'],['aws_tools','connectors'],['memory','isolation'],
+    ['config','chandra'],['connectors','chandra'],['isolation','chandra'],
+    ['chandra','streamlit'],['chandra','dpi_output'],
+    ['observation','dpi_output'],
+    ['chandra','vajra'],['chandra','mira'],['chandra','avani'],
+  ];
+  
+  const colors = {
+    b: '#3fb950', i: '#e3a008', n: '#6b6b73', f: '#ff2d2d'
+  };
+  
+  let hovered = null;
+  let tooltip = null;
+  
+  function getNode(id){ return nodes.find(n => n.id === id); }
+  
+  function draw(){
+    const w = canvas.width / (window.devicePixelRatio || 1);
+    const h = canvas.height / (window.devicePixelRatio || 1);
+    ctx.clearRect(0,0,w,h);
+    
+    // Draw edges
+    edges.forEach(([from,to]) => {
+      const a = getNode(from), b = getNode(to);
+      const ax = a.x + a.w/2, ay = a.y + a.h/2;
+      const bx = b.x + b.w/2, by = b.y + b.h/2;
+      
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      // Curved line
+      const mx = (ax + bx) / 2;
+      const my = (ay + by) / 2 - 10;
+      ctx.quadraticCurveTo(mx, my, bx, by);
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      
+      // Arrow head
+      const angle = Math.atan2(by - my, bx - mx);
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.lineTo(bx - 8 * Math.cos(angle - 0.4), by - 8 * Math.sin(angle - 0.4));
+      ctx.lineTo(bx - 8 * Math.cos(angle + 0.4), by - 8 * Math.sin(angle + 0.4));
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      ctx.fill();
+    });
+    
+    // Draw nodes
+    nodes.forEach(n => {
+      const isHov = hovered === n.id;
+      const c = colors[n.s];
+      
+      // Glow for focus
+      if (n.s === 'f') {
+        ctx.shadowColor = 'rgba(255,45,45,0.3)';
+        ctx.shadowBlur = 20;
+      } else if (isHov) {
+        ctx.shadowColor = c + '40';
+        ctx.shadowBlur = 15;
+      }
+      
+      // Box
+      ctx.beginPath();
+      roundRect(ctx, n.x, n.y, n.w, n.h, 6);
+      ctx.fillStyle = isHov ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.03)';
+      ctx.fill();
+      ctx.strokeStyle = isHov ? c : c + '60';
+      ctx.lineWidth = isHov ? 2 : 1;
+      ctx.stroke();
+      
+      ctx.shadowBlur = 0;
+      
+      // Left accent bar
+      ctx.fillStyle = c;
+      ctx.fillRect(n.x, n.y + 4, 3, n.h - 8);
+      
+      // Label
+      ctx.fillStyle = isHov ? '#fff' : '#e8e8ec';
+      ctx.font = '500 11px JetBrains Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const lines = n.label.split('\n');
+      const lineH = 14;
+      const startY = n.y + n.h/2 - (lines.length - 1) * lineH / 2;
+      lines.forEach((line, i) => {
+        ctx.fillText(line, n.x + n.w/2 + 4, startY + i * lineH);
+      });
+      
+      // Status dot
+      ctx.beginPath();
+      ctx.arc(n.x + n.w - 12, n.y + 12, 4, 0, Math.PI * 2);
+      ctx.fillStyle = c;
+      ctx.fill();
+    });
+    
+    // Layer labels
+    ctx.font = '500 10px JetBrains Mono, monospace';
+    ctx.fillStyle = '#5b5b63';
+    ctx.textAlign = 'left';
+    ctx.fillText('core/', 20, 40);
+    ctx.fillText('verticals/cloud_eng/', 20, 160);
+    ctx.fillText('clients/_template/', 20, 280);
+    ctx.fillText('agents/', 20, 400);
+  }
+  
+  function roundRect(ctx, x, y, w, h, r){
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+  }
+  
+  canvas.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    
+    let found = null;
+    for (let i = nodes.length - 1; i >= 0; i--) {
+      const n = nodes[i];
+      if (mx >= n.x && mx <= n.x + n.w && my >= n.y && my <= n.y + n.h) {
+        found = n.id;
+        break;
+      }
+    }
+    
+    if (found !== hovered) {
+      hovered = found;
+      canvas.style.cursor = found ? 'pointer' : 'default';
+      draw();
+      
+      if (found) {
+        const n = getNode(found);
+        showTooltip(n, e.clientX - rect.left, e.clientY - rect.top);
+      } else {
+        hideTooltip();
+      }
+    } else if (found) {
+      updateTooltipPos(e.clientX - rect.left, e.clientY - rect.top);
+    }
+  });
+  
+  canvas.addEventListener('mouseleave', () => {
+    hovered = null;
+    hideTooltip();
+    draw();
+  });
+  
+  canvas.addEventListener('click', () => {
+    if (hovered) {
+      const n = getNode(hovered);
+      // Scroll to relevant section
+      if (n.id === 'dpi_engine' || n.id === 'dpi_output') {
+        document.getElementById('tour').scrollIntoView({behavior:'smooth'});
+      } else if (n.id === 'chandra' || n.id === 'vajra' || n.id === 'mira' || n.id === 'avani') {
+        document.getElementById('workers').scrollIntoView({behavior:'smooth'});
+      } else {
+        document.getElementById('architecture').scrollIntoView({behavior:'smooth'});
+      }
+    }
+  });
+  
+  // Tooltip
+  const tooltipData = {
+    orchestration: {title: 'LangGraph Orchestration', desc: 'State machine runtime for agent loops. Nodes, edges, human-in-the-loop checkpoints, streaming output.'},
+    tools: {title: 'Tool Framework', desc: 'Typed tool registration, schema validation, retry logic, MCP connector support.'},
+    memory: {title: 'Memory Layer', desc: 'Short-term (conversation), long-term (Postgres), episodic recall across sessions.'},
+    observation: {title: '360° Observation', desc: 'Structured logging, trace spans, decision audit trail, tool call history.'},
+    dpi_engine: {title: 'DPI Scoring Engine', desc: '0-100 index across 7 dimensions. Real signals only. Customer-configurable weights.', focus: true},
+    kras: {title: '5 KRA Definitions', desc: 'Cost, security, compliance, performance, reliability. Each with seeded misconfig tests for ≥80% recall.'},
+    aws_tools: {title: 'AWS Tool Set', desc: 'EC2, S3, IAM, CloudTrail, Cost Explorer, GuardDuty, Config. Scoped IAM per worker.'},
+    policy: {title: 'Policy Engine', desc: 'Guardrails the worker cannot cross. Approval gates for destructive actions.'},
+    config: {title: 'Client Config', desc: 'Engagement scope, KRA weights, reporting cadence, escalation paths.'},
+    connectors: {title: 'MCP Connectors', desc: 'Standardised interface to client AWS, ticketing, Slack, PagerDuty.'},
+    isolation: {title: 'Data Isolation', desc: 'Per-tenant Postgres schemas, encrypted at rest, audit-logged access.'},
+    chandra: {title: 'Chandra', desc: 'Digital Cloud Engineer. Claude Sonnet on Bedrock. PoC delivered, live with Regeneron.'},
+    streamlit: {title: 'Streamlit Dashboard', desc: 'Real-time worker status, KRA scores, action log, human approval queue.'},
+    dpi_output: {title: 'DPI Score Output', desc: 'Final 0-100 scorecard. The missing layer to make workers productised and sellable.', focus: true},
+    vajra: {title: 'Vajra (Planned)', desc: 'SOC Analyst. Threat detection, incident response, compliance reporting.'},
+    mira: {title: 'Mira (Planned)', desc: 'HR Ops. Onboarding, policy queries, compliance tracking.'},
+    avani: {title: 'Avani (Planned)', desc: 'Clinical Trials Ops. Site tracking, compliance, data quality.'},
+  };
+  
+  let tooltipEl = null;
+  
+  function showTooltip(node, x, y) {
+    const data = tooltipData[node.id];
+    if (!data) return;
+    
+    if (!tooltipEl) {
+      tooltipEl = document.createElement('div');
+      tooltipEl.style.cssText = 'position:absolute;background:#1a1a1f;border:1px solid #2a2a30;border-radius:6px;padding:12px 14px;max-width:260px;z-index:100;pointer-events:none;transition:opacity .15s;font-family:Geist,sans-serif';
+      canvas.parentElement.style.position = 'relative';
+      canvas.parentElement.appendChild(tooltipEl);
+    }
+    
+    const statusLabel = {b:'Built', i:'In build', n:'Planned', f:'Current focus'};
+    const statusColor = {b:'#3fb950', i:'#e3a008', n:'#6b6b73', f:'#ff2d2d'};
+    
+    tooltipEl.innerHTML = `
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px">${data.title}</div>
+      <div style="font-size:12px;color:#8a8a92;line-height:1.45">${data.desc}</div>
+      <div style="margin-top:8px;font-family:JetBrains Mono,monospace;font-size:10px;color:${statusColor[node.s]}">${statusLabel[node.s]}</div>
+    `;
+    tooltipEl.style.opacity = '1';
+    updateTooltipPos(x, y);
+  }
+  
+  function updateTooltipPos(x, y) {
+    if (!tooltipEl) return;
+    const rect = canvas.parentElement.getBoundingClientRect();
+    let tx = x + 16;
+    let ty = y - 10;
+    if (tx + 280 > rect.width) tx = x - 280;
+    if (ty + 120 > rect.height) ty = rect.height - 130;
+    tooltipEl.style.left = tx + 'px';
+    tooltipEl.style.top = ty + 'px';
+  }
+  
+  function hideTooltip() {
+    if (tooltipEl) tooltipEl.style.opacity = '0';
+  }
+  
+  window.addEventListener('resize', resize);
+  resize();
+})();
+
+// ── Layer toggle ──
+function toggleLayer(el){
+  el.classList.toggle('open');
+}
+</script>
+
+</body>
+</html>
